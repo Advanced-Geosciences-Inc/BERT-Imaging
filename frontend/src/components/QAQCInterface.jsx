@@ -135,16 +135,30 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
     };
   }, [rawData, filteredData]);
 
-  // Simple histogram calculation
+  // Enhanced histogram calculation with better edge case handling
   const createHistogram = (data, nBins = 30) => {
     if (!data.length) return [];
     
-    const min = Math.min(...data);
-    const max = Math.max(...data);
-    const binWidth = (max - min) / nBins;
+    // Filter out invalid values
+    const validData = data.filter(d => d != null && !isNaN(d) && isFinite(d));
+    if (!validData.length) return [];
     
+    const min = Math.min(...validData);
+    const max = Math.max(...validData);
+    
+    // Handle edge case where all values are the same
+    if (min === max) {
+      return [{
+        x: min,
+        count: validData.length,
+        inRange: true
+      }];
+    }
+    
+    const binWidth = (max - min) / nBins;
     const bins = Array(nBins).fill(0);
-    data.forEach(value => {
+    
+    validData.forEach(value => {
       const binIndex = Math.min(Math.floor((value - min) / binWidth), nBins - 1);
       bins[binIndex]++;
     });
@@ -152,8 +166,8 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
     return bins.map((count, i) => ({
       x: min + (i + 0.5) * binWidth,
       count,
-      inRange: true // You can add logic here to mark filtered bins
-    }));
+      inRange: true
+    })).filter(bin => bin.count > 0); // Only return non-empty bins for better visualization
   };
 
   const rhoaHistogram = rawData ? createHistogram(rawData.map(d => d.rhoa)) : [];
