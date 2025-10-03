@@ -417,29 +417,39 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-end justify-center space-x-1 border-b border-gray-200 relative">
-              {rhoaHistogram.map((bin, i) => {
-                const maxCount = Math.max(...rhoaHistogram.map(b => b.count), 1); // Ensure maxCount is at least 1
-                const availableHeight = 240; // h-64 (256px) minus some padding
-                const height = Math.max(3, (bin.count / maxCount) * availableHeight);
-                const isFiltered = bin.x < filters.minRhoa || bin.x > filters.maxRhoa;
-                return (
-                  <div
-                    key={i}
-                    className={`bg-blue-500 transition-colors ${
-                      bypassFilters ? 'opacity-80' : (isFiltered ? 'opacity-30' : 'opacity-80')
-                    }`}
-                    style={{
-                      height: `${height}px`,
-                      width: '8px',
-                      minHeight: '2px'
-                    }}
-                    title={`${bin.x.toFixed(1)} Ω⋅m: ${bin.count} readings ${
-                      bypassFilters ? '(all included)' : (isFiltered ? '(excluded)' : '(included)')
-                    }`}
-                  />
-                );
-              })}
+            <div className="h-64 flex items-end justify-center border-b border-gray-200 relative px-4">
+              {rhoaHistogram.length > 0 ? (
+                <div className="flex items-end justify-center w-full" style={{ gap: '1px' }}>
+                  {rhoaHistogram.map((bin, i) => {
+                    const maxCount = Math.max(...rhoaHistogram.map(b => b.count), 1);
+                    const availableHeight = 240;
+                    const height = Math.max(5, (bin.count / maxCount) * availableHeight);
+                    const isFiltered = bin.x < filters.minRhoa || bin.x > filters.maxRhoa;
+                    const barWidth = Math.min(12, Math.max(4, (100 / rhoaHistogram.length) * 4));
+                    
+                    return (
+                      <div
+                        key={i}
+                        className={`bg-blue-500 transition-colors ${
+                          bypassFilters ? 'opacity-80' : (isFiltered ? 'opacity-30' : 'opacity-80')
+                        }`}
+                        style={{
+                          height: `${height}px`,
+                          width: `${barWidth}px`,
+                          minHeight: '5px'
+                        }}
+                        title={`${bin.x.toFixed(2)} Ω⋅m: ${bin.count} readings ${
+                          bypassFilters ? '(all included)' : (isFiltered ? '(excluded)' : '(included)')
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No resistivity data available
+                </div>
+              )}
             </div>
             <div className="mt-2 flex justify-between text-xs text-gray-500">
               <span>{statistics.rhoaStats?.min?.toFixed(1)} Ω⋅m</span>
