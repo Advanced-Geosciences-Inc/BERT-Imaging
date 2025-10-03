@@ -137,7 +137,8 @@ def _read_table_flex(path: Path) -> pd.DataFrame:
     for sep in [",", ";", "\t"]:
         try:
             df = pd.read_csv(path, sep=sep, engine="c")
-            if len(df):
+            # Check if we got reasonable columns (more than 1 column expected)
+            if len(df) > 0 and len(df.columns) >= 4:
                 return df
         except Exception as e:
             last_err = e
