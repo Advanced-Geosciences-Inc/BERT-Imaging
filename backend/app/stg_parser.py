@@ -131,25 +131,38 @@ def read_srt_or_stg_normalized(path: Path):
 # --------------------------------------------------------------------
 def _read_table_flex(path: Path) -> pd.DataFrame:
     """
-    Try ',', ';', '\\t', then whitespace. Return a DataFrame or raise ValueError.
+    Try ',', ';', '\t', then whitespace. Return a DataFrame or raise ValueError.
     """
     last_err: Optional[Exception] = None
+    
+    # First, try to skip comment lines that start with * or #
+    def _skip_comments(file_path):
+        lines = []
+        with open(file_path, 'r', encoding='latin-1', errors='ignore') as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped and not stripped.startswith('*') and not stripped.startswith('#'):
+                    lines.append(line)
+        return '\n'.join(lines)
+    
+    content = _skip_comments(path)
+    
     for sep in [",", ";", "\t"]:
         try:
-            df = pd.read_csv(path, sep=sep, engine="c")
+            df = pd.read_csv(io.StringIO(content), sep=sep, engine="c")
             # Check if we got reasonable columns (more than 1 column expected)
             if len(df) > 0 and len(df.columns) >= 4:
                 return df
         except Exception as e:
             last_err = e
     try:
-        # pandas recommends sep='\\s+' instead of delim_whitespace
-        df = pd.read_csv(path, sep=r"\s+", engine="python")
+        # pandas recommends sep='\s+' instead of delim_whitespace
+        df = pd.read_csv(io.StringIO(content), sep=r"\s+", engine="python")
         return df
     except Exception as e:
         raise ValueError(
-            "Could not parse table with ',', ';', '\\t', or whitespace. "
-            f"Attempts: [\"sep=',' -> {repr(last_err)}\", \"sep=';'\", \"sep='\\t'\"]"
+            "Could not parse table with ',', ';', '\t', or whitespace. "
+            f"Attempts: [\"sep=',' -> {repr(last_err)}\", \"sep=';'\", \"sep='\t'\"]"
         )
 
 # Common header aliases seen in SuperSting/various exports
