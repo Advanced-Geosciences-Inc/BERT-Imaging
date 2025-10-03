@@ -168,7 +168,13 @@ def versions() -> Dict[str, Any]:
 def import_stg(file: UploadFile = File(...)) -> UploadResponse:
     raw = file.file.read()
     file_id = _stg_file_id(raw)
-    raw_path = DATA_DIR / f"{file_id}.upload"
+    
+    # Preserve the original extension so the parser knows it's an STG file
+    original_ext = Path(file.filename).suffix.lower() if file.filename else ".stg"
+    if original_ext not in [".stg", ".srt"]:
+        original_ext = ".stg"  # Default to .stg
+        
+    raw_path = DATA_DIR / f"{file_id}{original_ext}"
     raw_path.write_bytes(raw)
 
     df: Optional[pd.DataFrame] = None
