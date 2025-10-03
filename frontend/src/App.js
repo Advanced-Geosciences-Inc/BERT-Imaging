@@ -11,6 +11,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 function App() {
   const [currentFileId, setCurrentFileId] = useState(null);
   const [fileData, setFileData] = useState(null);
+  const [qaQcSettings, setQaQcSettings] = useState(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
