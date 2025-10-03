@@ -241,6 +241,28 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Bypass Toggle */}
+          <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <Checkbox
+              id="bypass-filters"
+              checked={bypassFilters}
+              onCheckedChange={setBypassFilters}
+              data-testid="bypass-filters-toggle"
+            />
+            <div className="space-y-1">
+              <label htmlFor="bypass-filters" className="text-sm font-medium text-blue-900 cursor-pointer">
+                Use All Data (Bypass Filters)
+              </label>
+              <p className="text-xs text-blue-700">
+                Include all readings regardless of error or resistivity thresholds
+              </p>
+            </div>
+            {bypassFilters && (
+              <Badge variant="secondary" className="ml-auto bg-blue-100 text-blue-800">
+                All data included
+              </Badge>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Error Filter */}
             <div className="space-y-3">
