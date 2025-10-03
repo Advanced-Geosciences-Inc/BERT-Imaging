@@ -349,17 +349,25 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
 
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-600">
-              <span className="font-medium">{statistics.excluded || 0}</span> readings will be excluded from inversion
+              {bypassFilters ? (
+                <span className="text-blue-700 font-medium">
+                  All {statistics.total || 0} readings will be used (filters bypassed)
+                </span>
+              ) : (
+                <span>
+                  <span className="font-medium">{statistics.excluded || 0}</span> readings will be excluded from inversion
+                </span>
+              )}
             </div>
             <Button 
               onClick={() => {
-                // TODO: Apply filters and proceed to inversion
-                console.log('Applying filters:', filters);
+                console.log('Applying filters:', { filters, bypassFilters });
+                // TODO: Store filter settings for inversion tab
               }}
-              disabled={statistics.filtered === 0}
+              disabled={!bypassFilters && statistics.filtered === 0}
               data-testid="apply-filters-btn"
             >
-              Apply Filters & Continue
+              {bypassFilters ? 'Use All Data & Continue' : 'Apply Filters & Continue'}
             </Button>
           </div>
         </CardContent>
