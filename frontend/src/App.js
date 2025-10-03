@@ -58,6 +58,7 @@ function App() {
                   backendUrl={BACKEND_URL}
                   fileId={currentFileId}
                   fileData={fileData}
+                  onSettingsChange={setQaQcSettings}
                 />
               ) : (
                 <div className="text-center py-12 text-gray-500">
@@ -72,6 +73,7 @@ function App() {
                   backendUrl={BACKEND_URL}
                   fileId={currentFileId}
                   fileData={fileData}
+                  qaQcSettings={qaQcSettings}
                 />
               ) : (
                 <div className="text-center py-12 text-gray-500">
