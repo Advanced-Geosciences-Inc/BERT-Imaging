@@ -233,11 +233,37 @@ def import_stg(file: UploadFile = File(...)) -> UploadResponse:
     if "k" not in df.columns:
         df["k"] = np.nan
     
+    # Handle different voltage column formats
+    if "dV" not in df.columns:
+        if {"VM", "VN"}.issubset(df.columns):
+            df["dV"] = df["VM"] - df["VN"]
+        elif "V" in df.columns:
+            df["dV"] = df["V"]
+        elif "VOLTAGE" in df.columns:
+            df["dV"] = df["VOLTAGE"]
+    
+    # Handle different current column formats
+    if "I" not in df.columns:
+        if "CURRENT" in df.columns:
+            df["I"] = df["CURRENT"]
+        elif "CURR" in df.columns:
+            df["I"] = df["CURR"]
+    
     if "rhoa" not in df.columns:
         if {"dV", "I"}.issubset(df.columns):
+            # Compute geometric factor k if not provided
+            if df["k"].isna().all():
+                # Simple approximation for uniform electrode spacing
+                # This is a basic k-factor approximation - in real use you'd compute proper geometric factors
+                df["k"] = 2.0 * np.pi  # Default approximation
             df["rhoa"] = (df["dV"] / df["I"]) * df["k"]
         else:
-            raise HTTPException(400, "Missing rhoa (and no dV/I to compute it)")
+            missing_cols = []
+            if "dV" not in df.columns:
+                missing_cols.append("dV (or VM/VN)")
+            if "I" not in df.columns:
+                missing_cols.append("I (or CURRENT)")
+            raise HTTPException(400, f"Missing rhoa and cannot compute it. Missing: {missing_cols}")
     
     if "err" not in df.columns:
         df["err"] = 0.03
