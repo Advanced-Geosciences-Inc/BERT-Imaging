@@ -1,0 +1,52 @@
+{
+	"folders": [
+	  { "path": "." }
+	],
+	"settings": {
+	  // Python: point to your Conda env interpreter
+	  //"python.defaultInterpreterPath": "C:\\Users\\kamet\\anaconda3\\envs\\bert-imager\\python.exe",
+	  "python.defaultInterpreterPath": "C:\\Users\\kamet\\anaconda3\\envs\\pg\\python.exe",
+	  "python.analysis.typeCheckingMode": "basic",
+	  "python.linting.enabled": true,
+	  "python.formatting.provider": "black",
+  
+	  // Terminal defaults
+	  "terminal.integrated.cwd": "C:\\AGI\\bert-imager",
+	  "terminal.integrated.profiles.windows": {
+		"PowerShell": {
+		  "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+		},
+		"Conda (bert-imager)": {
+		  "path": "C:\\Users\\kamet\\anaconda3\\Scripts\\activate.bat",
+		  "args": ["bert-imager"]
+		}
+	  },
+	  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  
+	  // Frontend formatting/linting
+	  "editor.formatOnSave": true,
+	  "eslint.enable": true,
+	  "prettier.requireConfig": true,
+  
+	  // File associations
+	  "files.associations": {
+		"*.tsx": "typescriptreact",
+		"*.ts": "typescript",
+		"*.py": "python"
+	  },
+  
+	  // Allow extension recs
+	  "extensions.ignoreRecommendations": false
+	},
+	"extensions": {
+	  "recommendations": [
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"esbenp.prettier-vscode",
+		"dbaeumer.vscode-eslint",
+		"ms-azuretools.vscode-docker",
+		"eamodio.gitlens"
+	  ]
+	}
+  }
+  
