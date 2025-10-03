@@ -22,7 +22,7 @@ def _coalesce_col(df, candidates, new_name):
     return df  # unchanged if none found
 
 # ensure we have canonical names used by the backend
-df = _coalesce_col(df, ["rhoa", "rho_a", "appres", "app_res", "apparentresistivity", "res", "resistivity"], "rhoa")
+# df = _coalesce_col(df, ["rhoa", "rho_a", "appres", "app_res", "apparentresistivity", "res", "resistivity"], "rhoa")
 df = _coalesce_col(df, ["err", "error", "std", "sigma_rel", "unc"], "err")
 # keep your existing A,B,M,N,k,dV,I etc. as you have them today
 
