@@ -513,10 +513,28 @@ export default function InversionInterface({ backendUrl, fileId, fileData, qaQcS
         <div>
           <h2 className="text-2xl font-bold text-gray-900">ERT Inversion</h2>
           <p className="text-gray-600">Configure parameters and run resistivity inversion</p>
+          {qaQcSettings && (
+            <p className="text-sm text-blue-600 mt-1">
+              {qaQcSettings.bypassFilters 
+                ? `Using all ${qaQcSettings.totalDataCount} readings (filters bypassed)`
+                : `Using ${qaQcSettings.filteredDataCount}/${qaQcSettings.totalDataCount} readings (filtered)`
+              }
+            </p>
+          )}
         </div>
-        <Badge variant="outline" className="text-lg px-3 py-1">
-          {fileData?.name}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {qaQcSettings && (
+            <Badge 
+              variant={qaQcSettings.bypassFilters ? "default" : "secondary"} 
+              className="text-sm px-2 py-1"
+            >
+              {qaQcSettings.bypassFilters ? "All Data" : "Filtered Data"}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-lg px-3 py-1">
+            {fileData?.name}
+          </Badge>
+        </div>
       </div>
 
       {/* Inversion Parameters */}
