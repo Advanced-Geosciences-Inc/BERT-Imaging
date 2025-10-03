@@ -361,8 +361,15 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
             </div>
             <Button 
               onClick={() => {
-                console.log('Applying filters:', { filters, bypassFilters });
-                // TODO: Store filter settings for inversion tab
+                const settings = {
+                  filters,
+                  bypassFilters,
+                  filteredDataCount: statistics.filtered,
+                  totalDataCount: statistics.total,
+                  appliedAt: new Date().toISOString()
+                };
+                console.log('Applying QA/QC settings:', settings);
+                onSettingsChange?.(settings);
               }}
               disabled={!bypassFilters && statistics.filtered === 0}
               data-testid="apply-filters-btn"
