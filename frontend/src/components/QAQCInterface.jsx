@@ -22,17 +22,9 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
       try {
         setLoading(true);
         
-        // Get the correct CSV path from metadata
+        // Get the correct CSV filename from metadata
         const csvFileName = fileData.metadata?.normalized_csv?.split('/').pop() || `${fileId}.normalized.csv`;
-        const csvResponse = await fetch(`${backendUrl}/results/${csvFileName}`);
-        
-        if (!csvResponse.ok) {
-          // Try alternative path structure
-          const altResponse = await fetch(`${backendUrl}/api/results/${fileId}`);
-          if (!altResponse.ok) {
-            throw new Error('Failed to fetch CSV data from both paths');
-          }
-        }
+        const csvResponse = await fetch(`${backendUrl}/api/data/${csvFileName}`);
         
         const csvText = await csvResponse.text();
         const lines = csvText.trim().split('\n');
