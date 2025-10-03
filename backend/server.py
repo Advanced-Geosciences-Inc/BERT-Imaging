@@ -472,6 +472,22 @@ def ert_results(file_id: str) -> Dict[str, Any]:
     }
     return {"file_id": file_id, "files": files}
 
+@api_router.get("/data/{filename}")
+def serve_data_file(filename: str):
+    """Serve normalized CSV and other data files"""
+    from fastapi import Response
+    from fastapi.responses import FileResponse
+    
+    file_path = DATA_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, f"File not found: {filename}")
+    
+    return FileResponse(
+        path=str(file_path),
+        media_type="text/csv" if filename.endswith('.csv') else "application/octet-stream",
+        filename=filename
+    )
+
 # Original endpoints (keeping for compatibility)
 @api_router.get("/")
 async def root():
