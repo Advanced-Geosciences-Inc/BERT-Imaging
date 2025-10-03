@@ -429,13 +429,17 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
                 return (
                   <div
                     key={i}
-                    className={`bg-red-500 transition-colors ${isFiltered ? 'opacity-30' : 'opacity-80'}`}
+                    className={`bg-red-500 transition-colors ${
+                      bypassFilters ? 'opacity-80' : (isFiltered ? 'opacity-30' : 'opacity-80')
+                    }`}
                     style={{
                       height: `${height}px`,
                       width: '8px',
                       minHeight: '2px'
                     }}
-                    title={`${(bin.x * 100).toFixed(1)}%: ${bin.count} readings`}
+                    title={`${(bin.x * 100).toFixed(1)}%: ${bin.count} readings ${
+                      bypassFilters ? '(all included)' : (isFiltered ? '(excluded)' : '(included)')
+                    }`}
                   />
                 );
               })}
