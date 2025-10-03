@@ -173,6 +173,17 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
   const rhoaHistogram = rawData ? createHistogram(rawData.map(d => d.rhoa)) : [];
   const errorHistogram = rawData ? createHistogram(rawData.map(d => d.err)) : [];
 
+  // Debug logging for error values (remove in production)
+  React.useEffect(() => {
+    if (rawData && rawData.length > 0) {
+      const errorValues = rawData.map(d => d.err);
+      console.log('Error values sample:', errorValues.slice(0, 10));
+      console.log('Error range:', Math.min(...errorValues), 'to', Math.max(...errorValues));
+      console.log('Error histogram bins:', errorHistogram.length);
+      console.log('Error histogram sample:', errorHistogram.slice(0, 5));
+    }
+  }, [rawData, errorHistogram]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
