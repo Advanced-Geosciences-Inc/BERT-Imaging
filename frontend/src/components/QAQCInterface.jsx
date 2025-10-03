@@ -457,29 +457,39 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-end justify-center space-x-1 border-b border-gray-200 relative">
-              {errorHistogram.map((bin, i) => {
-                const maxCount = Math.max(...errorHistogram.map(b => b.count), 1); // Ensure maxCount is at least 1
-                const availableHeight = 240; // h-64 (256px) minus some padding
-                const height = Math.max(3, (bin.count / maxCount) * availableHeight);
-                const isFiltered = bin.x > filters.maxError;
-                return (
-                  <div
-                    key={i}
-                    className={`bg-red-500 transition-colors ${
-                      bypassFilters ? 'opacity-80' : (isFiltered ? 'opacity-30' : 'opacity-80')
-                    }`}
-                    style={{
-                      height: `${height}px`,
-                      width: '8px',
-                      minHeight: '2px'
-                    }}
-                    title={`${(bin.x * 100).toFixed(1)}%: ${bin.count} readings ${
-                      bypassFilters ? '(all included)' : (isFiltered ? '(excluded)' : '(included)')
-                    }`}
-                  />
-                );
-              })}
+            <div className="h-64 flex items-end justify-center border-b border-gray-200 relative px-4">
+              {errorHistogram.length > 0 ? (
+                <div className="flex items-end justify-center w-full" style={{ gap: '1px' }}>
+                  {errorHistogram.map((bin, i) => {
+                    const maxCount = Math.max(...errorHistogram.map(b => b.count), 1);
+                    const availableHeight = 240;
+                    const height = Math.max(5, (bin.count / maxCount) * availableHeight);
+                    const isFiltered = bin.x > filters.maxError;
+                    const barWidth = Math.min(12, Math.max(4, (100 / errorHistogram.length) * 4));
+                    
+                    return (
+                      <div
+                        key={i}
+                        className={`bg-red-500 transition-colors ${
+                          bypassFilters ? 'opacity-80' : (isFiltered ? 'opacity-30' : 'opacity-80')
+                        }`}
+                        style={{
+                          height: `${height}px`,
+                          width: `${barWidth}px`,
+                          minHeight: '5px'
+                        }}
+                        title={`${(bin.x * 100).toFixed(2)}%: ${bin.count} readings ${
+                          bypassFilters ? '(all included)' : (isFiltered ? '(excluded)' : '(included)')
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No error data available
+                </div>
+              )}
             </div>
             <div className="mt-2 flex justify-between text-xs text-gray-500">
               <span>{((statistics.errorStats?.min || 0) * 100).toFixed(1)}%</span>
