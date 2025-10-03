@@ -263,11 +263,12 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
               </Badge>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity ${bypassFilters ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Error Filter */}
             <div className="space-y-3">
               <label className="text-sm font-medium text-gray-700">
                 Maximum Error (%)
+                {bypassFilters && <span className="text-blue-600 ml-2">(Disabled)</span>}
               </label>
               <div className="space-y-2">
                 <Slider
@@ -279,6 +280,7 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
                   max={50}
                   step={1}
                   className="w-full"
+                  disabled={bypassFilters}
                   data-testid="error-threshold-slider"
                 />
                 <div className="flex justify-between text-xs text-gray-500">
@@ -293,6 +295,7 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
             <div className="space-y-3">
               <label className="text-sm font-medium text-gray-700">
                 Minimum Resistivity (Ω⋅m)
+                {bypassFilters && <span className="text-blue-600 ml-2">(Disabled)</span>}
               </label>
               <div className="space-y-2">
                 <Slider
@@ -304,6 +307,7 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
                   max={3}
                   step={0.1}
                   className="w-full"
+                  disabled={bypassFilters}
                   data-testid="min-rhoa-slider"
                 />
                 <div className="flex justify-between text-xs text-gray-500">
@@ -318,6 +322,7 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
             <div className="space-y-3">
               <label className="text-sm font-medium text-gray-700">
                 Maximum Resistivity (Ω⋅m)
+                {bypassFilters && <span className="text-blue-600 ml-2">(Disabled)</span>}
               </label>
               <div className="space-y-2">
                 <Slider
@@ -329,11 +334,11 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
                   max={6}
                   step={0.1}
                   className="w-full"
+                  disabled={bypassFilters}
                   data-testid="max-rhoa-slider"
                 />
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>100</span>
-                  <span className="font-medium">{filters.maxRhoa.toFixed(0)}</span>
                   <span>1M</span>
                 </div>
               </div>
