@@ -147,67 +147,121 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
     ctx.restore();
   };
 
-  const renderResistivityModel = (data) => {
+  const renderResistivityModel = (trianglesData, modelData, nodesData, results) => {
     const canvas = modelRef.current;
-    if (!canvas || !data.length) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
-    const height = canvas.height = 300 * (window.devicePixelRatio || 1);
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = 300;
+    canvas.width = canvasWidth * (window.devicePixelRatio || 1);
+    canvas.height = canvasHeight * (window.devicePixelRatio || 1);
     ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
 
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Get color scale bounds
-    const rhoValues = data.map(d => displayOptions.logScale ? Math.log10(d.rho || 1) : (d.rho || 1));
-    const minRho = Math.min(...rhoValues);
-    const maxRho = Math.max(...rhoValues);
+    // Draw title and axes
+    ctx.fillStyle = '#000';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Resistivity Model', 10, 20);
+    
+    const plotMargin = { left: 60, right: 40, top: 40, bottom: 50 };
+    const plotWidth = canvasWidth - plotMargin.left - plotMargin.right;
+    const plotHeight = canvasHeight - plotMargin.top - plotMargin.bottom;
 
-    // Render triangles
-    data.forEach(triangle => {
-      const { x1, y1, x2, y2, x3, y3, rho } = triangle;
-      
-      if (isNaN(x1) || isNaN(y1) || isNaN(rho)) return;
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plotMargin.left, plotMargin.top);
+    ctx.lineTo(plotMargin.left, plotMargin.top + plotHeight);
+    ctx.lineTo(plotMargin.left + plotWidth, plotMargin.top + plotHeight);
+    ctx.stroke();
 
-      // Scale coordinates to canvas
-      const scaleX = (width - 100) / 20; // Assuming 20m width
-      const scaleY = (height - 80) / 10; // Assuming 10m depth
-      
-      const sx1 = 50 + x1 * scaleX;
-      const sy1 = 50 + Math.abs(y1) * scaleY;
-      const sx2 = 50 + x2 * scaleX;
-      const sy2 = 50 + Math.abs(y2) * scaleY;
-      const sx3 = 50 + x3 * scaleX;
-      const sy3 = 50 + Math.abs(y3) * scaleY;
+    if (trianglesData && trianglesData.length > 0) {
+      // Get bounds from the data
+      const xCoords = trianglesData.flatMap(d => [d.x1 || 0, d.x2 || 0, d.x3 || 0]).filter(x => !isNaN(x));
+      const yCoords = trianglesData.flatMap(d => [d.y1 || 0, d.y2 || 0, d.y3 || 0]).filter(y => !isNaN(y));
+      const rhoValues = trianglesData.map(d => d.rho || 1).filter(r => !isNaN(r) && r > 0);
 
-      // Get color based on resistivity
-      const normalizedRho = (displayOptions.logScale ? Math.log10(rho) : rho - minRho) / (maxRho - minRho);
-      const color = getViridisColor(normalizedRho);
+      if (xCoords.length > 0 && yCoords.length > 0 && rhoValues.length > 0) {
+        const xMin = Math.min(...xCoords);
+        const xMax = Math.max(...xCoords);
+        const yMin = Math.min(...yCoords);
+        const yMax = Math.max(...yCoords);
+        const rhoMin = Math.min(...rhoValues);
+        const rhoMax = Math.max(...rhoValues);
 
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(sx1, sy1);
-      ctx.lineTo(sx2, sy2);
-      ctx.lineTo(sx3, sy3);
-      ctx.closePath();
-      ctx.fill();
+        const scaleX = plotWidth / (xMax - xMin || 1);
+        const scaleY = plotHeight / (yMax - yMin || 1);
 
-      if (displayOptions.showMesh) {
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
+        // Render triangles
+        trianglesData.forEach(triangle => {
+          const { x1, y1, x2, y2, x3, y3, rho } = triangle;
+          
+          if (isNaN(x1) || isNaN(y1) || isNaN(rho) || rho <= 0) return;
+
+          // Transform coordinates
+          const sx1 = plotMargin.left + (x1 - xMin) * scaleX;
+          const sy1 = plotMargin.top + plotHeight - (y1 - yMin) * scaleY;
+          const sx2 = plotMargin.left + (x2 - xMin) * scaleX;
+          const sy2 = plotMargin.top + plotHeight - (y2 - yMin) * scaleY;
+          const sx3 = plotMargin.left + (x3 - xMin) * scaleX;
+          const sy3 = plotMargin.top + plotHeight - (y3 - yMin) * scaleY;
+
+          // Color based on resistivity
+          const rhoValue = displayOptions.logScale ? Math.log10(rho) : rho;
+          const rhoMinScale = displayOptions.logScale ? Math.log10(rhoMin) : rhoMin;
+          const rhoMaxScale = displayOptions.logScale ? Math.log10(rhoMax) : rhoMax;
+          const normalizedRho = (rhoValue - rhoMinScale) / (rhoMaxScale - rhoMinScale || 1);
+          const color = getViridisColor(Math.max(0, Math.min(1, normalizedRho)));
+
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(sx1, sy1);
+          ctx.lineTo(sx2, sy2);
+          ctx.lineTo(sx3, sy3);
+          ctx.closePath();
+          ctx.fill();
+
+          if (displayOptions.showMesh) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.3;
+            ctx.stroke();
+          }
+        });
+
+        // Draw electrode positions if requested
+        if (displayOptions.showElectrodes && nodesData && nodesData.length > 0) {
+          ctx.fillStyle = '#000';
+          nodesData.forEach(node => {
+            if (!isNaN(node.x) && !isNaN(node.y)) {
+              const sx = plotMargin.left + (node.x - xMin) * scaleX;
+              const sy = plotMargin.top + plotHeight - (node.y - yMin) * scaleY;
+              ctx.fillRect(sx - 2, sy - 2, 4, 4);
+            }
+          });
+        }
+
+        // Add colorbar
+        drawColorbar(ctx, canvasWidth - 35, plotMargin.top, 20, plotHeight, rhoMin, rhoMax, displayOptions.logScale);
       }
-    });
+    } else {
+      // Fallback visualization for mock data
+      ctx.fillStyle = '#666';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Mock inversion - PyGimli not available', plotMargin.left, plotMargin.top + 30);
+      ctx.fillText(`Chi² = ${results?.chi2?.toFixed(3) || 'N/A'}`, plotMargin.left, plotMargin.top + 50);
+    }
 
-    // Labels
+    // Axis labels
     ctx.fillStyle = '#000';
     ctx.font = '12px sans-serif';
-    ctx.fillText('Resistivity Model', 10, 20);
-    ctx.fillText('Distance (m)', width/2 - 30, height - 10);
+    ctx.fillText('Distance (m)', canvasWidth/2 - 30, canvasHeight - 10);
     
     ctx.save();
     ctx.rotate(-Math.PI/2);
-    ctx.fillText('Depth (m)', -height/2, 15);
+    ctx.fillText('Depth (m)', -canvasHeight/2, 15);
     ctx.restore();
   };
 
