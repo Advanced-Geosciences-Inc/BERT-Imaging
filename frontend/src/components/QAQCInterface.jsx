@@ -21,39 +21,81 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
     const loadRawData = async () => {
       try {
         setLoading(true);
-        // Get normalized CSV data for QA/QC analysis
-        const csvPath = fileData.metadata?.normalized_csv;
-        if (csvPath) {
-          // For now, we'll use the inspect data and simulate some statistics
-          // In a real implementation, you'd fetch the actual CSV data
-          const inspectData = fileData.inspectData;
+        
+        // Fetch the actual normalized CSV data
+        const csvResponse = await fetch(`${backendUrl}/results/${fileId}.normalized.csv`);
+        if (!csvResponse.ok) {
+          throw new Error('Failed to fetch CSV data');
+        }
+        
+        const csvText = await csvResponse.text();
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',');
+        
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const row = {};
+          headers.forEach((header, idx) => {
+            const cleanHeader = header.trim();
+            row[cleanHeader] = parseFloat(values[idx]) || 0;
+          });
           
-          // Simulate apparent resistivity and error data for histograms
-          const nReadings = inspectData.n_readings;
+          // Ensure we have the required columns
+          if (row.A && row.B && row.M && row.N && row.rhoa) {
+            data.push({
+              a: row.A,
+              b: row.B, 
+              m: row.M,
+              n: row.N,
+              rhoa: row.rhoa,
+              err: row.err || 0.03,
+              k: row.k || 1.0
+            });
+          }
+        }
+        
+        setRawData(data);
+        
+        // Set initial filter bounds based on actual data
+        if (data.length > 0) {
+          const rhoaValues = data.map(d => d.rhoa);
+          const errorValues = data.map(d => d.err);
+          
+          setFilters(prev => ({
+            ...prev,
+            minRhoa: Math.max(1, Math.min(...rhoaValues) * 0.9),
+            maxRhoa: Math.min(100000, Math.max(...rhoaValues) * 1.1),
+            maxError: Math.min(0.5, Math.max(...errorValues) * 1.2)
+          }));
+        }
+        
+      } catch (error) {
+        console.error('Failed to load raw data:', error);
+        // Fallback to inspect data if CSV fetch fails
+        if (fileData?.inspectData) {
+          const inspectData = fileData.inspectData;
           const simulatedData = [];
           
-          for (let i = 0; i < nReadings; i++) {
+          for (let i = 0; i < Math.min(inspectData.n_readings, 100); i++) {
             simulatedData.push({
-              rhoa: Math.random() * 1000 + 10, // 10-1010 Ohm-m
-              err: Math.random() * 0.15 + 0.01, // 1-16% error
+              rhoa: Math.random() * 1000 + 10,
+              err: Math.random() * 0.15 + 0.01,
               a: Math.floor(Math.random() * inspectData.n_electrodes) + 1,
               b: Math.floor(Math.random() * inspectData.n_electrodes) + 1,
               m: Math.floor(Math.random() * inspectData.n_electrodes) + 1,
               n: Math.floor(Math.random() * inspectData.n_electrodes) + 1,
             });
           }
-          
           setRawData(simulatedData);
         }
-      } catch (error) {
-        console.error('Failed to load raw data:', error);
       } finally {
         setLoading(false);
       }
     };
 
     loadRawData();
-  }, [fileId, fileData]);
+  }, [fileId, fileData, backendUrl]);
 
   const filteredData = useMemo(() => {
     if (!rawData) return [];
