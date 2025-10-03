@@ -294,7 +294,7 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
     ctx.restore();
   };
 
-  // Simple viridis colormap approximation
+  // Enhanced colormap functions
   const getViridisColor = (t) => {
     t = Math.max(0, Math.min(1, t));
     const colors = [
@@ -318,6 +318,76 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
     const b = Math.round(c1[2] + frac * (c2[2] - c1[2]));
     
     return `rgb(${r},${g},${b})`;
+  };
+
+  const drawColorbar = (ctx, x, y, width, height, minVal, maxVal, logScale) => {
+    // Draw colorbar background
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(x - 2, y - 2, width + 4, height + 4);
+    
+    // Draw color gradient
+    const steps = 50;
+    const stepHeight = height / steps;
+    
+    for (let i = 0; i < steps; i++) {
+      const t = i / (steps - 1);
+      const color = getViridisColor(1 - t); // Invert for top-to-bottom
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y + i * stepHeight, width, stepHeight + 1);
+    }
+    
+    // Draw labels
+    ctx.fillStyle = '#000';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'left';
+    
+    const labelMin = logScale ? Math.pow(10, Math.log10(minVal)).toFixed(1) : minVal.toFixed(1);
+    const labelMax = logScale ? Math.pow(10, Math.log10(maxVal)).toFixed(1) : maxVal.toFixed(1);
+    
+    ctx.fillText(labelMax, x + width + 5, y + 10);
+    ctx.fillText(labelMin, x + width + 5, y + height);
+    
+    // Units
+    ctx.fillText('Ω⋅m', x + width + 5, y - 5);
+  };
+
+  const renderPlaceholderPlots = (results) => {
+    [pseudosectionRef, modelRef, misfitRef].forEach((ref, idx) => {
+      const canvas = ref.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const canvasWidth = canvas.offsetWidth;
+      const canvasHeight = 300;
+      canvas.width = canvasWidth * (window.devicePixelRatio || 1);
+      canvas.height = canvasHeight * (window.devicePixelRatio || 1);
+      ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      
+      const titles = ['Pseudosection - Apparent Resistivity', 'Resistivity Model', 'Data Misfit'];
+      
+      ctx.fillStyle = '#000';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(titles[idx], 10, 20);
+      
+      ctx.fillStyle = '#666';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Inversion completed with mock PyGimli', 60, 150);
+      
+      if (results?.chi2) {
+        ctx.fillText(`χ² = ${results.chi2.toFixed(3)}`, 60, 170);
+      }
+      
+      // Draw placeholder axes
+      ctx.strokeStyle = '#ccc';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, 40);
+      ctx.lineTo(60, canvasHeight - 50);
+      ctx.lineTo(canvasWidth - 40, canvasHeight - 50);
+      ctx.stroke();
+    });
   };
 
   useEffect(() => {
