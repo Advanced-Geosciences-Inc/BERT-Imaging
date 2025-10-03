@@ -106,44 +106,87 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
     });
   };
 
-  const renderPseudosection = (data) => {
+  const renderPseudosection = (trianglesData, results) => {
     const canvas = pseudosectionRef.current;
-    if (!canvas || !data.length) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
-    const height = canvas.height = 300 * (window.devicePixelRatio || 1);
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = 300;
+    canvas.width = canvasWidth * (window.devicePixelRatio || 1);
+    canvas.height = canvasHeight * (window.devicePixelRatio || 1);
     ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
 
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Simple pseudosection rendering - simulate apparent resistivity data
-    const nElec = Math.sqrt(data.length) || 10;
-    const spacing = inversionParams.spacing;
-
-    ctx.fillStyle = '#4f46e5';
-    ctx.font = '12px sans-serif';
+    // Draw title and axes
+    ctx.fillStyle = '#000';
+    ctx.font = '14px sans-serif';
     ctx.fillText('Pseudosection - Apparent Resistivity', 10, 20);
     
-    // Draw electrode positions
-    if (displayOptions.showElectrodes) {
-      ctx.fillStyle = '#000';
-      for (let i = 0; i < nElec; i++) {
-        const x = 50 + i * 20;
-        ctx.fillRect(x-1, 40, 2, 8);
-        if (i % 5 === 0) {
-          ctx.fillText(i.toString(), x-5, 35);
+    const plotMargin = { left: 60, right: 40, top: 40, bottom: 50 };
+    const plotWidth = canvasWidth - plotMargin.left - plotMargin.right;
+    const plotHeight = canvasHeight - plotMargin.top - plotMargin.bottom;
+
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plotMargin.left, plotMargin.top);
+    ctx.lineTo(plotMargin.left, plotMargin.top + plotHeight);
+    ctx.lineTo(plotMargin.left + plotWidth, plotMargin.top + plotHeight);
+    ctx.stroke();
+
+    // For pseudosection, we simulate the apparent resistivity arrangement
+    // In a real implementation, this would use the original measurement geometry
+    if (results && fileData?.inspectData) {
+      const nElec = fileData.inspectData.n_electrodes;
+      const spacing = inversionParams.spacing;
+      
+      // Draw electrode positions at surface
+      if (displayOptions.showElectrodes) {
+        ctx.fillStyle = '#000';
+        for (let i = 0; i < nElec; i++) {
+          const x = plotMargin.left + (i / (nElec - 1)) * plotWidth;
+          ctx.fillRect(x - 1, plotMargin.top - 5, 2, 8);
+          if (i % 5 === 0) {
+            ctx.font = '10px sans-serif';
+            ctx.fillText(i.toString(), x - 5, plotMargin.top - 8);
+          }
+        }
+      }
+      
+      // Simulate pseudosection data points
+      ctx.fillStyle = '#666';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`${fileData.inspectData.n_readings} data points`, plotMargin.left, plotHeight + plotMargin.top + 20);
+      
+      // Draw some sample data points in pseudosection arrangement
+      const maxDepthLevel = 5;
+      for (let level = 1; level <= maxDepthLevel; level++) {
+        for (let pos = 0; pos < nElec - level * 2; pos += 2) {
+          const x = plotMargin.left + ((pos + level) / (nElec - 1)) * plotWidth;
+          const y = plotMargin.top + (level / maxDepthLevel) * plotHeight;
+          
+          // Color based on simulated apparent resistivity
+          const rho = 50 + Math.random() * 200; // Simulate 50-250 ohm-m
+          const normalizedRho = Math.log10(rho / 50) / Math.log10(5); // Log normalize
+          const color = getViridisColor(normalizedRho);
+          
+          ctx.fillStyle = color;
+          ctx.fillRect(x - 3, y - 3, 6, 6);
         }
       }
     }
 
-    ctx.fillStyle = '#666';
-    ctx.fillText('Distance (m)', width/2 - 30, height - 10);
+    // Axis labels
+    ctx.fillStyle = '#000';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Distance (m)', canvasWidth/2 - 30, canvasHeight - 10);
     
-    // Y-axis label
     ctx.save();
     ctx.rotate(-Math.PI/2);
-    ctx.fillText('Depth Level', -height/2, 15);
+    ctx.fillText('Depth Level', -canvasHeight/2, 15);
     ctx.restore();
   };
 
