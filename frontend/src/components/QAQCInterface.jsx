@@ -392,9 +392,11 @@ export default function QAQCInterface({ backendUrl, fileId, fileData, onSettings
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-end justify-center space-x-1 border-b border-gray-200">
+            <div className="h-64 flex items-end justify-center space-x-1 border-b border-gray-200 relative">
               {rhoaHistogram.map((bin, i) => {
-                const height = Math.max(2, (bin.count / Math.max(...rhoaHistogram.map(b => b.count))) * 200);
+                const maxCount = Math.max(...rhoaHistogram.map(b => b.count));
+                const availableHeight = 240; // h-64 (256px) minus some padding
+                const height = Math.max(2, (bin.count / maxCount) * availableHeight);
                 const isFiltered = bin.x < filters.minRhoa || bin.x > filters.maxRhoa;
                 return (
                   <div
