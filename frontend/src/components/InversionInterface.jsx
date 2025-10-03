@@ -66,18 +66,30 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
 
   const renderPlots = async (results) => {
     try {
-      // Fetch triangles data for visualization
-      const trianglesResponse = await fetch(`${backendUrl}${results.files.triangles}`);
-      const trianglesText = await trianglesResponse.text();
-      const trianglesData = parseCSV(trianglesText);
+      // Fetch all required CSV files
+      const [trianglesResponse, modelResponse, nodesResponse] = await Promise.all([
+        fetch(`${backendUrl}${results.files.triangles}`),
+        fetch(`${backendUrl}${results.files.model_cells}`),
+        fetch(`${backendUrl}${results.files.mesh_nodes}`)
+      ]);
 
-      // Render each plot
-      renderPseudosection(trianglesData);
-      renderResistivityModel(trianglesData);
-      renderMisfit(trianglesData);
+      if (!trianglesResponse.ok || !modelResponse.ok || !nodesResponse.ok) {
+        throw new Error('Failed to fetch mesh data');
+      }
+
+      const trianglesData = parseCSV(await trianglesResponse.text());
+      const modelData = parseCSV(await modelResponse.text());
+      const nodesData = parseCSV(await nodesResponse.text());
+
+      // Render each plot with the fetched data
+      renderPseudosection(trianglesData, results);
+      renderResistivityModel(trianglesData, modelData, nodesData, results);
+      renderMisfit(trianglesData, results);
 
     } catch (error) {
       console.error('Failed to render plots:', error);
+      // Render placeholder plots if data fetch fails
+      renderPlaceholderPlots(results);
     }
   };
 
