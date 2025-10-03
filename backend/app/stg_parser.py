@@ -159,7 +159,7 @@ def _read_table_flex(path: Path) -> pd.DataFrame:
         # pandas recommends sep='\s+' instead of delim_whitespace
         df = pd.read_csv(io.StringIO(content), sep=r"\s+", engine="python")
         return df
-    except Exception as e:
+    except Exception:
         raise ValueError(
             "Could not parse table with ',', ';', '\t', or whitespace. "
             f"Attempts: [\"sep=',' -> {repr(last_err)}\", \"sep=';'\", \"sep='\t'\"]"
