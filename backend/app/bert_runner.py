@@ -3,9 +3,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import pygimli as pg
-import pygimli.meshtools as mt
-from pygimli.physics import ert
+try:
+    import pygimli as pg
+    import pygimli.meshtools as mt
+    from pygimli.physics import ert
+except Exception:
+    import sys
+    sys.path.append('/app/backend')
+    import mock_pygimli as pg
+    mt = pg.meshtools
+    ert = pg.physics.ert
 
 # ---------- helpers ----------
 
