@@ -28,8 +28,14 @@ try:
     import pygimli as pg
     from pygimli.physics import ert
 except Exception:
-    pg = None  # type: ignore
-    ert = None  # type: ignore
+    try:
+        import sys
+        sys.path.append('/app/backend')
+        import mock_pygimli as pg
+        ert = pg.physics.ert
+    except Exception:
+        pg = None  # type: ignore
+        ert = None  # type: ignore
 
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR.parent / "data"
