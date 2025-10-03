@@ -308,32 +308,99 @@ export default function InversionInterface({ backendUrl, fileId, fileData }) {
     ctx.restore();
   };
 
-  const renderMisfit = (data) => {
+  const renderMisfit = (trianglesData, results) => {
     const canvas = misfitRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
-    const height = canvas.height = 300 * (window.devicePixelRatio || 1);
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = 300;
+    canvas.width = canvasWidth * (window.devicePixelRatio || 1);
+    canvas.height = canvasHeight * (window.devicePixelRatio || 1);
     ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
 
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.fillStyle = '#4f46e5';
-    ctx.font = '12px sans-serif';
+    // Draw title and axes
+    ctx.fillStyle = '#000';
+    ctx.font = '14px sans-serif';
     ctx.fillText('Data Misfit', 10, 20);
-
-    if (inversionResults) {
-      ctx.fillText(`χ² = ${inversionResults.chi2.toFixed(3)}`, 10, 40);
+    
+    if (results?.chi2) {
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`χ² = ${results.chi2.toFixed(3)}`, 10, 40);
+      
+      // Quality assessment
+      let quality = 'Excellent';
+      let qualityColor = '#22c55e';
+      if (results.chi2 > 2) {
+        quality = 'Poor';
+        qualityColor = '#ef4444';
+      } else if (results.chi2 > 1.5) {
+        quality = 'Fair';
+        qualityColor = '#f59e0b';
+      } else if (results.chi2 > 1.2) {
+        quality = 'Good';
+        qualityColor = '#3b82f6';
+      }
+      
+      ctx.fillStyle = qualityColor;
+      ctx.fillText(`Fit Quality: ${quality}`, 10, 55);
     }
 
-    // Simulate misfit visualization
-    ctx.fillStyle = '#666';
-    ctx.fillText('Distance (m)', width/2 - 30, height - 10);
+    const plotMargin = { left: 60, right: 40, top: 70, bottom: 50 };
+    const plotWidth = canvasWidth - plotMargin.left - plotMargin.right;
+    const plotHeight = canvasHeight - plotMargin.top - plotMargin.bottom;
+
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plotMargin.left, plotMargin.top);
+    ctx.lineTo(plotMargin.left, plotMargin.top + plotHeight);
+    ctx.lineTo(plotMargin.left + plotWidth, plotMargin.top + plotHeight);
+    ctx.stroke();
+
+    // Simulate misfit data - in real implementation this would show residuals
+    if (fileData?.inspectData) {
+      const nReadings = fileData.inspectData.n_readings;
+      
+      // Draw misfit histogram or pseudosection-style misfit display
+      for (let i = 0; i < Math.min(nReadings, 50); i++) {
+        const x = plotMargin.left + (i / 49) * plotWidth;
+        
+        // Simulate residual values (should be from actual inversion)
+        const residual = (Math.random() - 0.5) * 4; // -2 to +2 standard deviations
+        const y = plotMargin.top + plotHeight/2 + residual * (plotHeight/8);
+        
+        // Color code residuals
+        const absResidual = Math.abs(residual);
+        let color = '#22c55e'; // Green for good fit
+        if (absResidual > 1.5) color = '#ef4444'; // Red for poor fit
+        else if (absResidual > 1) color = '#f59e0b'; // Orange for fair fit
+        
+        ctx.fillStyle = color;
+        ctx.fillRect(x - 1, y - 1, 2, 2);
+      }
+      
+      // Zero line
+      ctx.strokeStyle = '#666';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(plotMargin.left, plotMargin.top + plotHeight/2);
+      ctx.lineTo(plotMargin.left + plotWidth, plotMargin.top + plotHeight/2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#000';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Data Point Index', canvasWidth/2 - 40, canvasHeight - 10);
     
     ctx.save();
     ctx.rotate(-Math.PI/2);
-    ctx.fillText('Depth Level', -height/2, 15);
+    ctx.fillText('Normalized Residual', -canvasHeight/2, 15);
     ctx.restore();
   };
 
