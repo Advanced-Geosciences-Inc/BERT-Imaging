@@ -14,6 +14,7 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
     minRhoa: 1,         // 1 Ohm-m
     maxRhoa: 10000,     // 10k Ohm-m
   });
+  const [bypassFilters, setBypassFilters] = useState(false);
 
   useEffect(() => {
     if (!fileId || !fileData) return;
