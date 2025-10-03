@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Dict, Any, Tuple, Iterable, Optional, List
-import re, json
+import re
+import json
 import numpy as np
 import pandas as pd
 from .stg_parser import read_srt_or_stg_normalized, robust_read_stg_table
 
 # --- add near your imports if not present ---
-import re
 
 def _coalesce_col(df, candidates, new_name):
     """Find the first existing column (case-insensitive) and rename to new_name."""
@@ -91,7 +91,6 @@ def _dc_to_df(dc) -> pd.DataFrame:
             pass
     return df
 
-from .stg_parser import read_srt_or_stg_normalized
 
 import traceback
 
