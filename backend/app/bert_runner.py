@@ -135,7 +135,6 @@ def invert_from_csv(
     mesh = mt.createMesh(world, quality=quality)
 
     # ---- geometric factor & rhoa (flat surface) ----
-    import numpy as np
     a = np.asarray(scheme["a"], dtype=int)
     b = np.asarray(scheme["b"], dtype=int)
     m = np.asarray(scheme["m"], dtype=int)
