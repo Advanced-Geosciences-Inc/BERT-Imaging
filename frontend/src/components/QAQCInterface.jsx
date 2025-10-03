@@ -99,12 +99,15 @@ export default function QAQCInterface({ backendUrl, fileId, fileData }) {
   const filteredData = useMemo(() => {
     if (!rawData) return [];
     
+    // If bypass is enabled, return all data
+    if (bypassFilters) return rawData;
+    
     return rawData.filter(point => 
       point.err <= filters.maxError &&
       point.rhoa >= filters.minRhoa &&
       point.rhoa <= filters.maxRhoa
     );
-  }, [rawData, filters]);
+  }, [rawData, filters, bypassFilters]);
 
   const statistics = useMemo(() => {
     if (!rawData) return {};
