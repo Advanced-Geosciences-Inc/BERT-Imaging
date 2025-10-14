@@ -219,39 +219,48 @@ backend:
 frontend:
   - task: "File I/O Tab - Upload STG files"
     implemented: true
-    working: "unknown"
+    working: false
     file: "/app/frontend/src/App.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Existing tab should work with backend changes. Needs UI testing."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: File upload interface works (backend accepts files successfully), but uploaded files do not appear in the UI list. The FileManager component is not properly displaying uploaded files, preventing users from selecting files to enable other tabs. Backend file upload API works correctly (tested with multiple STG files), but frontend state management for uploaded files is broken. This blocks the entire workflow as users cannot proceed to QA/QC or BERT tabs without file selection."
   
   - task: "QA/QC Tab - Data filtering and histograms"
     implemented: true
-    working: "unknown"
+    working: "NA"
     file: "/app/frontend/src/components/QAQCInterface.jsx"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Should work with new backend. Needs UI testing."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ CANNOT TEST: QA/QC tab remains disabled because file selection is broken in File I/O tab. The component code looks correct and should work once file selection is fixed. Backend APIs for data retrieval work correctly."
   
   - task: "BERT Native Tab - Configuration and plotting"
     implemented: true
-    working: "unknown"
+    working: "NA"
     file: "/app/frontend/src/components/BertInterface.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Frontend displays BERT-generated PNG plots. Should work but needs testing with new backend."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ CANNOT TEST: BERT Native tab remains disabled because file selection is broken in File I/O tab. However, backend BERT APIs are fully functional - tested BERT inversion successfully with job_id: bert_job_stg-5c44012aec1a0e3f16a952ea20873b4fb8a58e5b_1d0d83e3, generated all PNG plots (resistivity_model, pseudosection, misfit), and plot endpoints return proper PNG images. The frontend component should work once file selection is fixed."
 
 metadata:
   created_by: "main_agent"
