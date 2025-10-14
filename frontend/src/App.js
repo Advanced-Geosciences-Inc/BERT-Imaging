@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FileManager from "./components/FileManager";
 import QAQCInterface from "./components/QAQCInterface";
 import InversionInterface from "./components/InversionInterface";
+import BertInterface from "./components/BertInterface";
 import "@/App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
