@@ -1,0 +1,7 @@
+# AGI SuperSting Data File
+    # Test data for BERT 2D Imager
+    A	B	M	N	CURRENT	VM	VN
+    1	2	3	4	0.1	0.05	0.02
+    2	3	4	5	0.1	0.08	0.03
+    3	4	5	6	0.1	0.12	0.04
+    
