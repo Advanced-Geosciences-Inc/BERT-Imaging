@@ -65,7 +65,16 @@ export default function FileManager({ backendUrl, onFileSelect, currentFileId })
         inspectData: inspectData
       };
       
-      setUploadedFiles(prev => [...prev, fileInfo]);
+      const updatedFiles = [...uploadedFiles, fileInfo];
+      setUploadedFiles(updatedFiles);
+      
+      // Persist to localStorage
+      try {
+        localStorage.setItem('bert_uploaded_files', JSON.stringify(updatedFiles));
+      } catch (error) {
+        console.error('Failed to save to localStorage:', error);
+      }
+      
       setUploadStatus({
         type: 'success',
         message: `Successfully uploaded ${file.name} (${result.n_readings} readings)`
