@@ -488,6 +488,154 @@ def serve_data_file(filename: str):
         filename=filename
     )
 
+# BERT Native Integration Endpoints
+from app.bert_native import BertWorkflowManager, BertConfig, detect_survey_type, get_default_config
+
+# Setup BERT work directory
+BERT_DIR = ROOT_DIR / "bert_jobs"
+BERT_DIR.mkdir(parents=True, exist_ok=True)
+bert_manager = BertWorkflowManager(BERT_DIR)
+
+class BertConfigRequest(BaseModel):
+    file_id: str
+    dimension: int = 2
+    topography: bool = False
+    paradx: float = 0.2
+    para2dquality: float = 33.0
+    lambda_reg: float = 20.0
+    zweight: float = 0.3
+    constraint: int = 1
+    blocky_model: bool = False
+    robust_data: bool = False
+
+class BertInversionResult(BaseModel):
+    success: bool
+    job_id: str
+    job_dir: str
+    plots: Dict[str, str]
+    output: str
+    error: Optional[str]
+    config: Dict[str, Any]
+
+@api_router.get("/bert/survey-info/{file_id}")
+def get_bert_survey_info(file_id: str):
+    """Analyze STG file and suggest BERT configuration"""
+    
+    # Find the original STG file
+    stg_files = list(DATA_DIR.glob(f"{file_id}.*"))
+    stg_file = None
+    
+    for f in stg_files:
+        if f.suffix.lower() in ['.stg', '.srt']:
+            stg_file = f
+            break
+    
+    if not stg_file:
+        raise HTTPException(404, f"STG file not found for {file_id}")
+    
+    survey_info = detect_survey_type(stg_file)
+    default_config = get_default_config(survey_info)
+    
+    return {
+        "file_id": file_id,
+        "survey_info": survey_info,
+        "recommended_config": default_config.__dict__
+    }
+
+@api_router.post("/bert/run-inversion", response_model=BertInversionResult)
+def run_bert_inversion(config_request: BertConfigRequest):
+    """Run BERT inversion with specified configuration"""
+    
+    # Find the STG file
+    file_id = config_request.file_id
+    stg_files = list(DATA_DIR.glob(f"{file_id}.*"))
+    stg_file = None
+    
+    for f in stg_files:
+        if f.suffix.lower() in ['.stg', '.srt']:
+            stg_file = f
+            break
+    
+    if not stg_file:
+        raise HTTPException(404, f"STG file not found for {file_id}")
+    
+    # Create BERT configuration
+    bert_config = BertConfig(
+        datafile=stg_file.name,
+        dimension=config_request.dimension,
+        topography=config_request.topography,
+        paradx=config_request.paradx,
+        para2dquality=config_request.para2dquality,
+        lambda_reg=config_request.lambda_reg,
+        zweight=config_request.zweight,
+        constraint=config_request.constraint,
+        blocky_model=config_request.blocky_model,
+        robust_data=config_request.robust_data
+    )
+    
+    try:
+        # Run BERT inversion
+        result = bert_manager.run_bert_inversion(stg_file, bert_config, file_id)
+        
+        job_id = Path(result["job_dir"]).name
+        
+        return BertInversionResult(
+            success=result["success"],
+            job_id=job_id,
+            job_dir=result["job_dir"],
+            plots=result["plots"],
+            output=result["output"],
+            error=result.get("error"),
+            config=result["config"]
+        )
+        
+    except Exception as e:
+        return BertInversionResult(
+            success=False,
+            job_id="",
+            job_dir="",
+            plots={},
+            output="",
+            error=str(e),
+            config=bert_config.__dict__
+        )
+
+@api_router.get("/bert/plots/{job_id}/{plot_type}")
+def serve_bert_plot(job_id: str, plot_type: str):
+    """Serve BERT-generated plot images"""
+    from fastapi.responses import FileResponse
+    
+    job_dir = BERT_DIR / job_id
+    if not job_dir.exists():
+        raise HTTPException(404, f"Job directory not found: {job_id}")
+    
+    # Look for plot files
+    plot_patterns = {
+        "resistivity": ["*resistivity*.png", "*result*.png", "*model*.png"],
+        "pseudosection": ["*pseudosection*.png", "*data*.png", "*apparent*.png"],
+        "misfit": ["*misfit*.png", "*fit*.png", "*error*.png"],
+        "mesh": ["*mesh*.png", "*grid*.png"]
+    }
+    
+    if plot_type not in plot_patterns:
+        raise HTTPException(400, f"Invalid plot type: {plot_type}")
+    
+    plot_file = None
+    for pattern in plot_patterns[plot_type]:
+        matches = list(job_dir.glob(pattern))
+        if matches:
+            plot_file = matches[0]
+            break
+    
+    if not plot_file:
+        raise HTTPException(404, f"Plot not found: {plot_type}")
+    
+    return FileResponse(
+        path=str(plot_file),
+        media_type="image/png",
+        filename=f"{job_id}_{plot_type}.png"
+    )
+
 # Original endpoints (keeping for compatibility)
 @api_router.get("/")
 async def root():
