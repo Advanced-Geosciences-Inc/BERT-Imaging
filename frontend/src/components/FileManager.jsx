@@ -7,7 +7,15 @@ import { Badge } from "@/components/ui/badge";
 
 export default function FileManager({ backendUrl, onFileSelect, currentFileId }) {
   const [uploadStatus, setUploadStatus] = useState(null);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState(() => {
+    // Initialize from localStorage
+    try {
+      const saved = localStorage.getItem('bert_uploaded_files');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileUpload = useCallback(async (event) => {
