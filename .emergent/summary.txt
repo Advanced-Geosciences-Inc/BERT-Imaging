@@ -1,0 +1,60 @@
+<analysis>
+The AI engineer successfully developed a full-stack application for electrical imaging modeling and inversion, using FastAPI for the backend and React for the frontend. Initial work involved understanding the provided codebase, which was a basic FastAPI/React/MongoDB setup. The core of the project has been to integrate the user's BERT-based geophysics workflow. This involved extensive debugging of STG file parsing, implementing a robust file upload mechanism, and creating a mock PyGimli and BERT environment for development. The frontend was structured with a tabbed interface for File I/O, QA/QC, and Inversion, with a later addition of a BERT Native tab. Recent efforts focused on fixing frontend visualization issues, implementing a Use All Data filter toggle, and transitioning to using BERT's native plot generation (PNGs) instead of in-house canvas rendering. The most recent task involves integrating the user's actual BERT implementation from a GitHub repository, after confirming that the mock BERT produces scientifically inaccurate results.
+</analysis>
+
+<product_requirements>
+The user requested a web application for electrical resistivity tomography (ERT) and induced polarization (IP) data analysis, building upon an existing BERT-based backend. The frontend should be a modular React application capable of reading AGI's STG and TRN files (TRN was deferred). It requires a File I/O tab for file management (reading/saving STG, TRN, OUT, PNGs), a QA/QC tab featuring interactive histograms for apparent resistivity and error distributions with user-definable thresholds to filter data, and an Inversion tab. The Inversion tab needs to allow users to set inversion parameters, run the inversion, and display three plots: pseudosection of apparent resistivities, inverted resistivity model, and data misfit, arranged in a 3-row x 1-column format similar to EarthImager 2D. Plots should include controls for colormaps, electrode locations, and log scaling. The application shifted from in-house canvas plotting to utilizing BERT's native plotting tools (PNGs) for the Inversion tab due to time constraints, focusing on 2D surveys. A Use All Data toggle was added to the QA/QC tab to bypass filters.
+</product_requirements>
+
+<key_technical_concepts>
+- **FastAPI**: Python framework for backend APIs.
+- **React**: JavaScript library for frontend UI.
+- **MongoDB**: Database for data persistence.
+- **PyGimli**: Geophysics modeling library (mocked for development).
+- **BERT**: Electrical imaging and inversion tool (mocked, transitioning to native CLI).
+- **Tailwind CSS / shadcn/ui**: Frontend styling and component library.
+- **STG file format**: AGI's data format for geophysics measurements.
+- **Canvas Rendering**: For interactive plots (initial approach).
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a typical full-stack architecture:
+
+
+
+**Key Files and Changes:**
+- : The main FastAPI application. It was heavily modified to correctly parse AGI STG files (handling comments, column names, computing rhoa from VM/VN), integrate mock PyGimli, and serve API endpoints for file upload, inspection, ERT inversion, and plot serving. The file extension handling for uploaded files was fixed.
+- : Contains the logic for parsing STG files. Significant changes were made to correctly interpret different STG formats, skip header comments, and accurately extract data columns.
+- : Handles BERT-specific data imports. Fixed Filesystem     1K-blocks     Used Available Use% Mounted on
+overlay         98766372 14423188  84326800  15% /
+tmpfs              65536        0     65536   0% /dev
+/dev/nvme0n6    10218772  2322112   7880276  23% /app
+/dev/nvme0n1p1  98766372 14423188  84326800  15% /etc/hosts
+shm                65536        0     65536   0% /dev/shm
+tmpfs            8179580        0   8179580   0% /proc/acpi
+tmpfs            8179580        0   8179580   0% /proc/scsi
+tmpfs            8179580        0   8179580   0% /sys/firmware not defined errors and duplicate function definitions.
+- Usage: bert_mock.py <config_file> <command>: A newly created Python script that mimics the BERT executable, generating synthetic plots (PNGs) for development purposes since the actual BERT is not installed in the container.
+- : Orchestrates the execution of BERT commands. Updated to use the correct Python interpreter () and to correctly parse command-line arguments for subprocess calls, including setting  for headless plotting.
+- : A new module abstracting the interaction with BERT, handling CFG file generation and result parsing.
+- : The primary React component. Modified to implement a 4-tab interface (File I/O, QA/QC, Canvas Plots, BERT Native) and manage global state, including passing filter settings between tabs.
+- : Implements the QA/QC tab. Updated to fetch and display real data histograms, connect interactive sliders for filtering, and introduce a Use All Data toggle to bypass filters. Histogram auto-scaling and rendering for sparse data were significantly improved.
+- : A new React component for the BERT Native tab, providing UI for BERT configuration, triggering backend BERT inversion, and displaying the BERT-generated PNG plots.
+- : A new file introduced for various helper functions related to plotting on the frontend.
+- , , : New documentation files created as requested by the user.
+</code_architecture>
+
+<pending_tasks>
+- Integrate the user's actual BERT executable from their GitHub repository into the application's backend.
+- Implement a parser for TRN (terrain) files.
+- Further refine the BERT CFG interface (simplified vs. advanced options).
+- Enhance the BERT Results tab to potentially include interactive overlays on the generated PNG plots.
+</pending_tasks>
+
+<current_work>
+Immediately before this summary request, the previous AI engineer was tasked with integrating the user's actual BERT installation, which the user provided as a GitHub repository (). This follows a debugging phase where the mock BERT was confirmed to be generating scientifically inaccurate resistivity models. The AI engineer has successfully built a robust framework for BERT integration, including backend API endpoints for generating CFG files, executing BERT commands, and serving generated plot PNGs, all using a  script for development. The frontend features a BERT Native tab in a 4-tab interface. The current work involves analyzing the user's shared GitHub repository to understand their existing BERT implementation, specifically examining  and  within their repository to identify plotting functionality and plan its integration into the current application, replacing the mock BERT.
+</current_work>
+
+<optional_next_step>
+Analyze the  in the user's GitHub repository to understand its plotting functionality and plan its integration.
+</optional_next_step>
