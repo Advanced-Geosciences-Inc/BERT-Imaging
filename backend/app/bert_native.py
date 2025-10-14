@@ -60,7 +60,9 @@ class BertRunner:
         if bert_executable is None:
             mock_bert = Path(__file__).parent.parent / "bert_mock.py"
             if mock_bert.exists():
-                self.bert_executable = f"python3 {mock_bert}"
+                # Use the same Python interpreter as the current process
+                python_exe = sys.executable
+                self.bert_executable = f"{python_exe} {mock_bert}"
             else:
                 self.bert_executable = "bert"  # Try real BERT
         else:
