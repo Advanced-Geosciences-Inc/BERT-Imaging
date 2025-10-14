@@ -4,6 +4,7 @@ Handles CFG file generation, BERT CLI execution, and plot management
 """
 
 import os
+import sys
 import subprocess
 import tempfile
 import shutil
