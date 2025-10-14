@@ -53,9 +53,19 @@ class BertConfig:
 class BertRunner:
     """Handles BERT execution and result management"""
     
-    def __init__(self, work_dir: Path, bert_executable: str = "bert"):
+    def __init__(self, work_dir: Path, bert_executable: str = None):
         self.work_dir = Path(work_dir)
-        self.bert_executable = bert_executable
+        
+        # Use mock BERT for testing if real BERT not available
+        if bert_executable is None:
+            mock_bert = Path(__file__).parent.parent / "bert_mock.py"
+            if mock_bert.exists():
+                self.bert_executable = f"python3 {mock_bert}"
+            else:
+                self.bert_executable = "bert"  # Try real BERT
+        else:
+            self.bert_executable = bert_executable
+            
         self.work_dir.mkdir(parents=True, exist_ok=True)
         
     def generate_cfg_file(self, config: BertConfig, cfg_path: Path) -> None:
