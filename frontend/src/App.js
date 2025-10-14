@@ -24,7 +24,7 @@ function App() {
           </header>
 
           <Tabs defaultValue="files" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="files" data-testid="files-tab">File I/O</TabsTrigger>
               <TabsTrigger 
                 value="qaqc" 
@@ -38,7 +38,14 @@ function App() {
                 disabled={!currentFileId}
                 data-testid="inversion-tab"
               >
-                Inversion
+                Canvas Plots
+              </TabsTrigger>
+              <TabsTrigger 
+                value="bert" 
+                disabled={!currentFileId}
+                data-testid="bert-tab"
+              >
+                BERT Native
               </TabsTrigger>
             </TabsList>
 
