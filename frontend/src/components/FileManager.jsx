@@ -66,11 +66,13 @@ export default function FileManager({ backendUrl, onFileSelect, currentFileId })
       };
       
       const updatedFiles = [...uploadedFiles, fileInfo];
+      console.log('Setting uploaded files:', updatedFiles);
       setUploadedFiles(updatedFiles);
       
       // Persist to localStorage
       try {
         localStorage.setItem('bert_uploaded_files', JSON.stringify(updatedFiles));
+        console.log('Saved to localStorage successfully');
       } catch (error) {
         console.error('Failed to save to localStorage:', error);
       }
