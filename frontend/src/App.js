@@ -89,6 +89,20 @@ function App() {
                 </div>
               )}
             </TabsContent>
+
+            <TabsContent value="bert" className="space-y-4">
+              {currentFileId ? (
+                <BertInterface 
+                  backendUrl={BACKEND_URL}
+                  fileId={currentFileId}
+                  fileData={fileData}
+                />
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  Please upload and select a file first
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </div>
       </BrowserRouter>
