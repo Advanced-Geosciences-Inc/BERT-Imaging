@@ -612,6 +612,7 @@ def serve_bert_plot(job_id: str, plot_type: str):
     # Look for plot files
     plot_patterns = {
         "resistivity": ["*resistivity*.png", "*result*.png", "*model*.png"],
+        "resistivity_model": ["*resistivity*.png", "*result*.png", "*model*.png"],  # Add this mapping
         "pseudosection": ["*pseudosection*.png", "*data*.png", "*apparent*.png"],
         "misfit": ["*misfit*.png", "*fit*.png", "*error*.png"],
         "mesh": ["*mesh*.png", "*grid*.png"]
