@@ -134,9 +134,10 @@ SAVERESULT={1 if config.save_result else 0}
             
             # Execute BERT commands
             for cmd in commands:
-                if self.bert_executable.startswith("python3"):
-                    # For mock BERT
-                    bert_cmd = self.bert_executable.split() + [str(cfg_file), cmd]
+                if " " in self.bert_executable:
+                    # For mock BERT (python + script path)
+                    parts = self.bert_executable.split()
+                    bert_cmd = parts + [str(cfg_file), cmd]
                 else:
                     # For real BERT
                     bert_cmd = [self.bert_executable, str(cfg_file), cmd]
