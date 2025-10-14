@@ -260,11 +260,7 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Integrate PyGimli bert_runner.py with proper inversion"
-    - "Update bert_import.py for robust file parsing"
-    - "STG file upload and parsing"
-    - "ERT inversion endpoint"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
