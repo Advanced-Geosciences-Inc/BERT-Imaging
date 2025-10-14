@@ -269,8 +269,10 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "File I/O Tab - Upload STG files"
+  stuck_tasks:
+    - "File I/O Tab - Upload STG files"
   test_all: false
   test_priority: "high_first"
 
@@ -279,3 +281,5 @@ agent_communication:
     message: "Integrated user's real PyGimli implementation from GitHub repository. Copied bert_runner.py and bert_import.py which include proper ERT inversion algorithms. PyGimli library not available in container, so code uses mock_pygimli.py fallback. Backend restarted successfully. Ready for testing with STG files to verify integration works correctly."
   - agent: "testing"
     message: "✅ BACKEND TESTING COMPLETE: All PyGimli/BERT integration endpoints tested successfully. Created comprehensive backend_test.py and verified: 1) File upload/parsing (POST /api/import/stg), 2) Data inspection (GET /api/inspect/{file_id}), 3) ERT scheme analysis (GET /api/ert/scheme/{file_id}), 4) Versions info (GET /api/versions), 5) BERT survey analysis (GET /api/bert/survey-info/{file_id}), 6) ERT inversion (GET /api/ert/invert/{file_id}). All endpoints return proper responses with expected data structures. Mock PyGimli integration working correctly. Backend is fully functional and ready for production use."
+  - agent: "testing"
+    message: "🔍 FRONTEND TESTING COMPLETE: Comprehensive testing revealed critical UI issue blocking deployment. Backend APIs are fully functional (file upload, BERT inversion, plot generation all work correctly), but FileManager component fails to display uploaded files in UI, preventing file selection and blocking access to QA/QC and BERT tabs. This is a showstopper for production deployment. The app has professional appearance and responsive design, but the core workflow is broken due to frontend state management issue in file handling."
